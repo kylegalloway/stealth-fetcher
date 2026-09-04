@@ -1,0 +1,24 @@
+[project]
+name = "stealth-fetcher"
+version = "0.1.0"
+description = "Fetches Cloudflare-protected pages with a real (or real-ish) browser engine, for sites that block plain HTTP scraping."
+authors = [
+    { name = "Kyle Galloway", email = "kyle.galloway.1993@gmail.com" }
+]
+license = "Apache-2.0"
+requires-python = ">=3.11"
+dependencies = [
+    "beautifulsoup4>=4.15.0",
+    "camoufox[geoip]>=0.4.11",
+    "patchright>=1.49.0",
+]
+
+[project.scripts]
+stealth-fetcher = "stealth_fetcher.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["stealth_fetcher"]
