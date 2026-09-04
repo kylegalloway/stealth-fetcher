@@ -23,6 +23,7 @@ Running `fetch()` in-page avoids that gap entirely.
 
 from __future__ import annotations
 
+import base64
 from typing import Protocol
 from urllib.parse import urlencode
 
@@ -31,6 +32,8 @@ class BrowserSession(Protocol):
     def goto(self, url: str, wait_selector: str | None = None, timeout_ms: int = 30_000) -> str: ...
 
     def get(self, url: str, params: dict[str, str] | None = None) -> str: ...
+
+    def get_binary(self, url: str) -> bytes: ...
 
 
 class _PlaywrightSession:
@@ -60,6 +63,33 @@ class _PlaywrightSession:
             }""",
             full_url,
         )
+
+    def get_binary(self, url: str) -> bytes:
+        """Like get(), but for binary responses (images, etc.) — same
+        in-page fetch() so it carries the challenge-passing session, base64
+        round-tripped through page.evaluate() since that channel is text-only.
+        Goes via Blob/FileReader rather than iterating the raw ArrayBuffer
+        bytes — camoufox (Firefox) raises "Accessing TypedArray data over
+        Xrays is slow, and forbidden" if content-script code touches a
+        TypedArray's bytes directly; FileReader stays entirely in-page."""
+        data_url = self._page.evaluate(
+            """async (url) => {
+                const resp = await fetch(url, {credentials: 'include'});
+                if (!resp.ok) {
+                    throw new Error(`GET ${url} -> ${resp.status} ${resp.statusText}`);
+                }
+                const blob = await resp.blob();
+                return await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.onerror = () => reject(reader.error);
+                    reader.readAsDataURL(blob);
+                });
+            }""",
+            url,
+        )
+        b64 = data_url.split(",", 1)[1]
+        return base64.b64decode(b64)
 
 
 class camoufox_session:

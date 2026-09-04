@@ -72,6 +72,12 @@ already loaded past whatever challenge the target site throws up:
   browser context (so it carries the cookies picked up while passing the
   challenge), e.g. for hitting a site's AJAX/API endpoints directly instead
   of navigating a full page per request.
+- `session.get_binary(url) -> bytes` — like `get()`, but for binary
+  responses (images, etc.). Note that both `get()` and `get_binary()` only
+  carry the challenge-passing session if the page has already `goto()`'d
+  something on the target site first — a script that only calls `get`/
+  `get_binary` without an initial `goto` starts from a blank page with no
+  cookies and will get the same 403 a plain HTTP client would.
 
 `argv` is whatever args follow `--` on the command line, so the script can
 take its own options (output path, etc.) via its own `argparse`.
