@@ -15,7 +15,9 @@ Two interchangeable browser engines, both driven through Playwright's API:
 
 - **camoufox** (default) — a hardened Firefox build that patches the
   fingerprinting signals (canvas/WebGL noise, navigator properties, timing)
-  Cloudflare's challenge checks.
+  Cloudflare's challenge checks. It always presents as Windows
+  (`FINGERPRINT_OS` in `engines.py`), so a container image only needs
+  camoufox's Windows spoofing fonts.
 - **chrome** — [patchright](https://github.com/Kaliiiiiiiiii-Vinyzu/patchright),
   a patched Chromium/Playwright build that removes the CDP-detectable traces
   stock Playwright/Selenium leave behind.

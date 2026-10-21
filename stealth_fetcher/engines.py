@@ -92,6 +92,15 @@ class _PlaywrightSession:
         return base64.b64decode(b64)
 
 
+# The OS camoufox pretends to be. Left unset it picks one at random per
+# session, which needs the bundled spoofing fonts for all three (~2.1 GB in
+# camoufox 0.5.8). Windows is the most common desktop OS, so it's the least
+# remarkable identity to show Cloudflare, and pinning it lets an image keep
+# only the font groups Windows reads (cfb-tv-schedule's Dockerfile deletes
+# the rest — change both together).
+FINGERPRINT_OS = "windows"
+
+
 class camoufox_session:
     """Context manager: `with camoufox_session() as session: ...`"""
 
@@ -104,7 +113,7 @@ class camoufox_session:
     def __enter__(self) -> _PlaywrightSession:
         from camoufox.sync_api import Camoufox
 
-        self._cm = Camoufox(headless=self._headless, geoip=True)
+        self._cm = Camoufox(headless=self._headless, geoip=True, os=FINGERPRINT_OS)
         self._browser = self._cm.__enter__()
         self._context = self._browser.new_context()
         page = self._context.new_page()
